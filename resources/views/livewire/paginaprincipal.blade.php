@@ -105,17 +105,17 @@
     <div class="col-sm-4 ">
       <h3>Adventure in Iceland</h3>
       <p>Experience the thrill of the Viking land...</p>
-      <a href="{{ route('posts.show', 11) }}" class="btn-read-more">Read More</a>
+      <a href="{{ route('posts.show', 2) }}" class="btn-read-more">Read More</a>
     </div>
     <div class="col-sm-4">
       <h3>Amazing Thailand</h3>
       <p>Embark on an unforgettable trip to Thailand, witness ...</p>
-      <a href="{{ route('posts.show', 12) }}" class="btn-read-more">Read More</a>
+      <a href="{{ route('posts.show', 3) }}" class="btn-read-more">Read More</a>
     </div>
     <div class="col-sm-4">
       <h3>Discover Spain</h3>        
       <p>Immerse yourself in the vibrant culture of Spain, drink wine and...</p>
-      <a href="{{ route('posts.show', 10) }}" class="btn-read-more">Read More</a>
+      <a href="{{ route('posts.show', 4) }}" class="btn-read-more">Read More</a>
     </div>
   </div>
   </div>

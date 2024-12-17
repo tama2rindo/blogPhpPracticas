@@ -24,25 +24,31 @@
 
 
 <h2>Comments</h2>
-<ul>
+<ul class="list-unstyled">
     @foreach ($post->comments as $comment)
-        <li>
+        <li class="mb-3">
             <p >
-                By {{ $comment->name }}: {{ $comment->content }}</li>
+                By {{ $comment->name }}: {{ $comment->content }}
             </p>
 
-        <!-- buttom to edit comment -->
-        <div style="gap: 0.5rem" class="d-flex justify-content-start hola">
-            <a href="{{ route('comments.edit', [$post, $comment]) }}" class="btn btn-primary">Edit Comment</a>
+            <!-- buttom to edit comment -->
+        <div class="d-flex gap-2">
+            @can('update', $comment)
+                <form action="{{ route('comments.edit', [$post, $comment]) }}" method="GET">
+                    <button type="submit" class="btn btn-primary">Edit Comment</button>
+                </form>
+            @endcan
 
-            <form action="{{ route('comments.destroy', [$post, $comment]) }}" method="POST"
-                onsubmit="return confirm('Are you sure you want to delete this comment?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">Delete Comment</button>
-            </form>
-
+            @can('delete', $comment)
+                <form action="{{ route('comments.destroy', [$post, $comment]) }}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to delete this comment?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete Comment</button>
+                </form>
+            @endcan
         </div>
+        </li> 
     @endforeach
 </ul>
 

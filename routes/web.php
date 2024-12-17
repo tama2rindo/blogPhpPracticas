@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\DependencyInjection\RegisterControllerArgumentLocatorsPass;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use GuzzleHttp\Middleware;
+use App\Livewire\Actions\Logout;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,13 +18,14 @@ use App\Http\Controllers\PostController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::view('/', 'welcome');
 
-Route::view('livewire/paginaprincipal', 'livewire.paginaprincipal')
+//Route::view('/', 'welcome');
+
+Route::view('/', 'livewire.paginaprincipal')
 ->name('paginaprincipal');
 
 Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
+  //  ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::view('profile', 'profile')
@@ -32,64 +35,67 @@ Route::view('profile', 'profile')
 Route::view('/register','register')
     ->name('register');
 
-//this routes are duplicated, here and in the admin only, however only admins can create posts
-Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create'); // Create a post
-Route::post('/posts', [PostController::class, 'store'])->name('posts.store'); // Store a post
-    
-// Routes accessible to everyone (including non-logged-in users)
-Route::get('/posts', [PostController::class, 'index'])->name('posts.index'); // View all posts
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // View single post
-Route::post('/comments/{post}', [CommentController::class, 'store'])->name('comments.store'); // Non-logged-in users can add comments
-    
-// Routes accessible to logged-in users only (cannot create posts, can edit and delete their own comments)
-Route::middleware('auth')->group(function () {
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy'); // Delete own comments
-    Route::get('/posts/{post}/comments/{comment}/edit', [CommentController::class, 'edit'])->name('comments.edit'); //edit comments
-    Route::put('/posts/{post}/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');  //update comments
-});
-    
-// Routes accessible only to admins (create, edit, and delete any post and delete any comment)
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create'); // Create a post
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store'); // Store a post
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy'); // Delete any post
-    Route::delete('/comments/{comment}/admin', [CommentController::class, 'adminDestroy'])->name('comments.adminDestroy'); // Admins can delete any comment
-    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
-    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-});
-    
 
 
-/* Public Post routes accessible to everyone
+/******************************************************************************** */
+//Auth route:
+//Route::group(['middleware' => 'role:super-admin|admin'], function() {
+Route::group(['middleware' => 'isAdmin'], function() {
+
+    //Permission routes:
+    Route::resource('permissions', App\Http\Controllers\PermissionController::class);   //removed [] because we'll target more than 1 funcion from this controller, as we're using a resource
+    Route::get('permissions/{permissionId}/delete', [App\Http\Controllers\PermissionController::class, 'destroy']);   //here i'm targeting 1 function (destroy), so have to add it at the end
+
+    Route::resource('roles', App\Http\Controllers\RoleController::class);  
+    Route::get('roles/{roleId}/delete', [App\Http\Controllers\RoleController::class, 'destroy']);   
+
+    Route::get('roles/{roleId}/give-permissions', [App\Http\Controllers\RoleController::class, 'addPermissionToRole']);   
+    Route::put('roles/{roleId}/give-permissions', [App\Http\Controllers\RoleController::class, 'givePermissionToRole']);   
+
+    Route::resource('users', App\Http\Controllers\UserController::class);  
+    Route::get('users/{userId}/delete', [App\Http\Controllers\UserController::class, 'destroy']);
+  
+});
+
+
+
+
+/******************************************************************************** */
+Route::group(['middleware' => 'role:super-admin|admin|loggedin-user'], function() {
+    Route::get('/posts/{post}/comments/{comment}/edit', [CommentController::class, 'edit'])->name('comments.edit');
+    Route::put('/posts/{post}/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/posts/{post}/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+});
+
+
+
+ //Public Post routes accessible to everyone
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-//Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
-//Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
 
 // Comment routes
 Route::post('/posts/{postId}/comments', [CommentController::class, 'store'])->name('comments.store');
 
-// Routes accessible only to admins
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create'); // Admin can create posts
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store'); // Admin can store posts
-});*/
-
-/*
 //routes for Update
 Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
 Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-Route::get('/posts/{post}/comments/{comment}/edit', [CommentController::class, 'edit'])->name('comments.edit');
-Route::put('/posts/{post}/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+//Route::get('/posts/{post}/comments/{comment}/edit', [CommentController::class, 'edit'])->name('comments.edit');
+//Route::put('/posts/{post}/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
 
 
 //Delete route
 Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
-Route::delete('/posts/{post}/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-*/
+//Route::delete('/posts/{post}/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
 
 //Searchbar route
 Route::get('/search', [App\Http\Controllers\PostController::class, 'search'])->name('posts.search');
+
+//Logout route
+Route::get('/logout', Logout::class)->name('logout');
 
 
 

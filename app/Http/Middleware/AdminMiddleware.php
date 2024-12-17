@@ -5,9 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+
 
 class AdminMiddleware
 {
@@ -16,23 +15,17 @@ class AdminMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next){
-        if (auth()->check()) {
-            $user = User::with('role')->find(auth()->id()); 
-
-            // Log user and role details for debugging
-            Log::info('User: ', ['user' => $user]);
-
-            // Check if the user is an admin
-            if ($user && $user->isAdmin()) {
+    public function handle(Request $request, Closure $next): Response
+    {
+        if(Auth::check())
+        {
+            /** @var App\Models\User */
+            $user = Auth::user();
+            if($user->hasRole(['super-admin', 'admin'])){
                 return $next($request);
+            }
+            abort(403, "user doesn't have the correct role");
         }
-        
-        return redirect('/')->with('error', 'Unauthorized');
-
-    }   
-}
-
-        
-    
+        abort(401);
+    }
 }

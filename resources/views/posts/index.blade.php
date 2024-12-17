@@ -3,8 +3,9 @@
 
 @section('content')
     <h1>Blog Posts</h1>
-    <a href="{{ route('posts.create') }}" class="btn btn-success" style="margin-bottom:25px;">Create New Post</a>
-
+    @hasrole('super-admin|admin')
+     <a href="{{ route('posts.create') }}" class="btn btn-success" style="margin-bottom:25px;">Create New Post</a> 
+    @endhasrole
      <div>
         @foreach ($posts as $post)
         <div class="post-item">

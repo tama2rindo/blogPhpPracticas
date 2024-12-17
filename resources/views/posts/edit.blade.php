@@ -22,7 +22,7 @@
             <label for="image">Image</label>
             <input class="form-control" type="file" id="image" name="image" accept="image/*"> 
             @if ($post->image)
-                <p>Current Image:</p>
+                <p style="margin-top: 10px;">Current Image:</p>
                 <img src="{{ asset('storage/' . $post->image) }}" alt="Current Image" style="max-width: 400px; max-height: auto;">
             @endif
         </div>

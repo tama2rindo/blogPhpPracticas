@@ -9,6 +9,8 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Comment;
+use App\Policies\CommentPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,11 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
+
+     protected $policies = [
+        Comment::class => CommentPolicy::class,
+    ];
+
     public function register()
     {
         $this->registerAuthenticator();
